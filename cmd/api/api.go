@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 const version = "1.0.0"
@@ -25,8 +27,8 @@ type config struct {
 
 type application struct {
 	config   config
-	infolog  *log.Logger
-	errorlog *log.Logger
+	infoLog  *log.Logger
+	errorLog *log.Logger
 	version  string
 }
 
@@ -37,10 +39,10 @@ func (app *application) serve() error {
 		IdleTimeout:       30 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		ReadHeaderTimeout: 5 * time.Second,
-		WriteTimeout:      30 * time.Second,
+		WriteTimeout:      5 * time.Second,
 	}
 
-	app.infolog.Printf("Starting Backend server in %s mode on port %d", app.config.env, app.config.port)
+	app.infoLog.Println(fmt.Sprintf("Starting Back end server in %s mode on port %d", app.config.env, app.config.port))
 
 	return srv.ListenAndServe()
 }
@@ -49,24 +51,29 @@ func main() {
 	var cfg config
 
 	flag.IntVar(&cfg.port, "port", 4001, "Server port to listen on")
-	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production|maintenance}")
+	flag.StringVar(&cfg.env, "env", "development", "Application enviornment {development|production|maintenance}")
 
 	flag.Parse()
 
-	cfg.stripe.key = os.Getenv("STRIPE_KEY")
-	cfg.stripe.key = os.Getenv("STRIPE_SECRET")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
-	infolog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
-	errorlog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	cfg.stripe.key = os.Getenv("STRIPE_KEY")
+	cfg.stripe.secret = os.Getenv("STRIPE_SECRET")
+
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	app := &application{
 		config:   cfg,
-		infolog:  infolog,
-		errorlog: errorlog,
+		infoLog:  infoLog,
+		errorLog: errorLog,
 		version:  version,
 	}
 
-	err := app.serve()
+	err = app.serve()
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -24,15 +24,16 @@ func (app *application) GetPaymentIntent(w http.ResponseWriter, r *http.Request)
 
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 		return
 	}
 
 	amount, err := strconv.Atoi(payload.Amount)
 	if err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 		return
 	}
+
 	card := cards.Card{
 		Secret:   app.config.stripe.secret,
 		Key:      app.config.stripe.key,
@@ -47,11 +48,12 @@ func (app *application) GetPaymentIntent(w http.ResponseWriter, r *http.Request)
 	}
 
 	if okay {
-		out, err := json.MarshalIndent(pi, "", "  ")
+		out, err := json.MarshalIndent(pi, "", "   ")
 		if err != nil {
-			app.errorlog.Println(err)
+			app.errorLog.Println(err)
 			return
 		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(out)
 	} else {
@@ -61,12 +63,12 @@ func (app *application) GetPaymentIntent(w http.ResponseWriter, r *http.Request)
 			Content: "",
 		}
 
-		out, err := json.MarshalIndent(j, "", "  ")
+		out, err := json.MarshalIndent(j, "", "   ")
 		if err != nil {
-			app.errorlog.Println(err)
+			app.errorLog.Println(err)
 		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(out)
 	}
-
 }

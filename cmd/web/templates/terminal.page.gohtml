@@ -64,7 +64,7 @@ Virtual Terminal
     const payButton = document.getElementById("pay-button");
     const processing = document.getElementById("processing-payment");
 
-    stripe = Stripe('pk_live_51NkBPlSE6q6RO0f7kcmYruzL45yQ6NlKEnlZXRvoFDtwhVCqBhQ6L3LBfvvrhdhUx4zirx1Q56Lw42qRayYoDL3x00S6F6qA1r');
+    stripe = Stripe('pk_test_51NkBPlSE6q6RO0f7PzuUzUgvzLMVIuCOpCZy3S0nrZQQ4DvljGNJtW0PJ5tETCCXKjL6OlMmsAk70SsywnUjeOwW00L6iTy0uE');
 
     function hidePayButton() {
         payButton.classList.add("d-none");
@@ -105,7 +105,7 @@ Virtual Terminal
 
         let payload = {
             amount: amountToCharge,
-            currency: 'cad',
+            currency: 'INR',
         }
 
         const requestOptions = {
