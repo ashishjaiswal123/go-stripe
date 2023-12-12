@@ -61,6 +61,11 @@ Virtual Terminal
 
     stripe = Stripe('pk_live_51NkBPlSE6q6RO0f7kcmYruzL45yQ6NlKEnlZXRvoFDtwhVCqBhQ6L3LBfvvrhdhUx4zirx1Q56Lw42qRayYoDL3x00S6F6qA1r');
 
+    function hidePayButton() {
+        payButton.classList.add("d-none");
+        processing.classList.remove("d-none");
+    }
+
     function val() {
         let form = document.getElementById("charge_form");
         if (form.checkValidity() === false) {
@@ -70,6 +75,7 @@ Virtual Terminal
             return;
         }
         form.classList.add("was-validated");
+        hidePayButton();
     }
 
     (function () {
