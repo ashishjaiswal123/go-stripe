@@ -44,7 +44,7 @@ func (app *application) serve() error {
 		WriteTimeout:      30 * time.Second,
 	}
 
-	app.infolog.Printf("Starting HTTP server in %s mode on port %d", app.config.env, app.config.port)
+	app.infolog.Printf("Starting Backend server in %s mode on port %d", app.config.env, app.config.port)
 
 	return srv.ListenAndServe()
 }
@@ -52,9 +52,8 @@ func (app *application) serve() error {
 func main() {
 	var cfg config
 
-	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")
-	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production}")
-	flag.StringVar(&cfg.api, "api", "http://localhost:4001", "URL to api")
+	flag.IntVar(&cfg.port, "port", 4001, "Server port to listen on")
+	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production|maintenance}")
 
 	flag.Parse()
 
@@ -64,19 +63,14 @@ func main() {
 	infolog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorlog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	tc := make(map[string]*template.Template)
-
 	app := &application{
-		config:        cfg,
-		infolog:       infolog,
-		errorlog:      errorlog,
-		templateCache: tc,
-		version:       version,
+		config:   cfg,
+		infolog:  infolog,
+		errorlog: errorlog,
 	}
 
 	err := app.serve()
 	if err != nil {
-		app.errorlog.Println(err)
 		log.Fatal(err)
 	}
 }
