@@ -68,7 +68,7 @@ func main() {
 	}
 
 	cfg.stripe.key = os.Getenv("STRIPE_KEY")
-	cfg.stripe.key = os.Getenv("STRIPE_SECRET")
+	cfg.stripe.secret = os.Getenv("STRIPE_SECRET")
 
 	infolog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorlog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)

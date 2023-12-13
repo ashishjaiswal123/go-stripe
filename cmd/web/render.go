@@ -38,6 +38,8 @@ var templateFS embed.FS
 
 func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
 	td.API = app.config.api
+	td.StripePublishableKey = app.config.stripe.key
+	td.StripeSecretKey = app.config.stripe.secret
 	return td
 }
 
