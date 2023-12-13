@@ -42,7 +42,7 @@ func (app *application) serve() error {
 		WriteTimeout:      5 * time.Second,
 	}
 
-	app.infoLog.Println(fmt.Sprintf("Starting Back end server in %s mode on port %d", app.config.env, app.config.port))
+	app.infoLog.Printf("Starting Back end server in %s mode on port %d\n", app.config.env, app.config.port)
 
 	return srv.ListenAndServe()
 }
@@ -51,10 +51,9 @@ func main() {
 	var cfg config
 
 	flag.IntVar(&cfg.port, "port", 4001, "Server port to listen on")
-	flag.StringVar(&cfg.env, "env", "development", "Application enviornment {development|production|maintenance}")
+	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production|maintenance}")
 
 	flag.Parse()
-
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
