@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"go-stripe-payment/internal/driver"
+	"go-stripe-payment/internal/models"
 	"html/template"
 	"log"
 	"net/http"
@@ -35,6 +36,7 @@ type application struct {
 	errorlog      *log.Logger
 	templateCache map[string]*template.Template
 	version       string
+	DB            models.DBModel
 }
 
 func (app *application) serve() error {
@@ -87,6 +89,7 @@ func main() {
 		errorlog:      errorlog,
 		templateCache: tc,
 		version:       version,
+		DB:            models.DBModel{DB: conn},
 	}
 
 	err = app.serve()
