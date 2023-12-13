@@ -25,7 +25,7 @@ Virtual Terminal
 
     <div class="mb-3">
         <label for="cardholder-email" class="form-label">Cardholder Email</label>
-        <input type="email" class="form-control" id="cardholder-email" name="cardholder_email" required=""
+        <input type="email" class="form-control" id="cardholder-email" name="email" required=""
             autocomplete="cardholder-email-new">
     </div>
 
@@ -144,7 +144,7 @@ Virtual Terminal
                                 document.getElementById("payment_currency").value = result.paymentIntent.currency;
                                 processing.classList.add("d-none");
                                 showCardSuccess();
-                                // would submit the form
+                                document.getElementById("charge_form").submit();
                             }
                         }
                     })
