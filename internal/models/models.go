@@ -38,7 +38,7 @@ type Widget struct {
 // Order is the type for all orders
 type Order struct {
 	ID            int       `json:"id"`
-	WidgetId      int       `json:"widget_id"`
+	WidgetID      int       `json:"widget_id"`
 	TransactionID int       `json:"transaction_id"`
 	StatusID      int       `json:"status_id"`
 	Quantity      int       `json:"quantity"`
@@ -70,7 +70,7 @@ type Transaction struct {
 	Currency            string    `json:"currency"`
 	LastFour            string    `json:"last_four"`
 	BankReturnCode      string    `json:"bank_return_code"`
-	TransactionStatusId int       `json:"transaction_status_id"`
+	TransactionStatusID int       `json:"transaction_status_id"`
 	CreatedAt           time.Time `json:"-"`
 	UpdatedAt           time.Time `json:"-"`
 }
@@ -90,11 +90,25 @@ type User struct {
 func (m *DBModel) GetWidget(id int) (Widget, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-
 	var widget Widget
 
-	row := m.DB.QueryRowContext(ctx, "select id, name from widgets where id = ?", id)
-	err := row.Scan(&widget.ID, &widget.Name)
+	row := m.DB.QueryRowContext(ctx, `
+		select
+			id, name, description, inventory_level, price, coalesce(image, ''), created_at, updated_at
+		from
+			widgets
+		where id = ?`, id)
+
+	err := row.Scan(
+		&widget.ID,
+		&widget.Name,
+		&widget.Description,
+		&widget.InventoryLevel,
+		&widget.Price,
+		&widget.Image,
+		&widget.CreatedAt,
+		&widget.UpdatedAt,
+	)
 	if err != nil {
 		return widget, err
 	}
