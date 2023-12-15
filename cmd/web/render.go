@@ -55,7 +55,7 @@ func (app *application) renderTemplate(w http.ResponseWriter, r *http.Request, p
 	} else {
 		t, err = app.parseTemplate(partials, page, templateToRender)
 		if err != nil {
-			app.errorlog.Println(err)
+			app.errorLog.Println(err)
 			return err
 		}
 	}
@@ -67,7 +67,7 @@ func (app *application) renderTemplate(w http.ResponseWriter, r *http.Request, p
 	td = app.addDefaultData(td, r)
 	err = t.Execute(w, td)
 	if err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 		return err
 	}
 
@@ -92,7 +92,7 @@ func (app *application) parseTemplate(partials []string, page, templateToRender 
 	}
 
 	if err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 		return nil, err
 	}
 

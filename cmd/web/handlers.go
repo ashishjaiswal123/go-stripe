@@ -14,7 +14,7 @@ import (
 func (app *application) Home(w http.ResponseWriter, r *http.Request) {
 
 	if err := app.renderTemplate(w, r, "home", &templateData{}); err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 	}
 }
 
@@ -22,14 +22,14 @@ func (app *application) Home(w http.ResponseWriter, r *http.Request) {
 func (app *application) VirtualTerminal(w http.ResponseWriter, r *http.Request) {
 
 	if err := app.renderTemplate(w, r, "terminal", &templateData{}, "stripe-js"); err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 	}
 }
 
 func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 		return
 	}
 
@@ -50,13 +50,13 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 
 	pi, err := card.RetrievePaymentIntent(paymentIntent)
 	if err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 		return
 	}
 
 	pm, err := card.GetPaymentMethod(paymentMethod)
 	if err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 		return
 	}
 
@@ -67,7 +67,7 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 	// create a new customer
 	customerID, err := app.SaveCustomer(firstName, lastName, email)
 	if err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 		return
 	}
 
@@ -87,7 +87,7 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 
 	txnID, err := app.SaveTransaction(txn)
 	if err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 		return
 	}
 
@@ -105,7 +105,7 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 
 	_, err = app.SaveOrder(order)
 	if err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 		return
 	}
 
@@ -127,7 +127,7 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 	if err := app.renderTemplate(w, r, "succeeded", &templateData{
 		Data: data,
 	}); err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 		return
 	}
 }
@@ -172,7 +172,7 @@ func (app *application) ChargeOnce(w http.ResponseWriter, r *http.Request) {
 
 	widget, err := app.DB.GetWidget(widgetID)
 	if err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 		return
 	}
 
@@ -182,6 +182,6 @@ func (app *application) ChargeOnce(w http.ResponseWriter, r *http.Request) {
 	if err := app.renderTemplate(w, r, "buy-once", &templateData{
 		Data: data,
 	}, "stripe-js"); err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 	}
 }

@@ -35,8 +35,8 @@ type config struct {
 
 type application struct {
 	config        config
-	infolog       *log.Logger
-	errorlog      *log.Logger
+	infoLog       *log.Logger
+	errorLog      *log.Logger
 	templateCache map[string]*template.Template
 	version       string
 	DB            models.DBModel
@@ -53,7 +53,7 @@ func (app *application) serve() error {
 		WriteTimeout:      30 * time.Second,
 	}
 
-	app.infolog.Printf("Starting HTTP server in %s mode on port %d", app.config.env, app.config.port)
+	app.infoLog.Printf("Starting HTTP server in %s mode on port %d", app.config.env, app.config.port)
 
 	return srv.ListenAndServe()
 }
@@ -76,12 +76,12 @@ func main() {
 	cfg.stripe.key = os.Getenv("STRIPE_KEY")
 	cfg.stripe.secret = os.Getenv("STRIPE_SECRET")
 
-	infolog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
-	errorlog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	conn, err := driver.OpenDB(cfg.db.dsn)
 	if err != nil {
-		errorlog.Fatal(err)
+		errorLog.Fatal(err)
 	}
 	defer conn.Close()
 
@@ -93,8 +93,8 @@ func main() {
 
 	app := &application{
 		config:        cfg,
-		infolog:       infolog,
-		errorlog:      errorlog,
+		infoLog:       infoLog,
+		errorLog:      errorLog,
 		templateCache: tc,
 		version:       version,
 		DB:            models.DBModel{DB: conn},
@@ -103,7 +103,7 @@ func main() {
 
 	err = app.serve()
 	if err != nil {
-		app.errorlog.Println(err)
+		app.errorLog.Println(err)
 		log.Fatal(err)
 	}
 }
