@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/gob"
 	"flag"
 	"fmt"
 	"go-stripe-payment/internal/driver"
@@ -59,6 +60,7 @@ func (app *application) serve() error {
 }
 
 func main() {
+	gob.Register(map[string]any{})
 	var cfg config
 
 	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")
