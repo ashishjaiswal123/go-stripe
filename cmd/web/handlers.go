@@ -8,6 +8,14 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// Home displays the home page
+func (app *application) Home(w http.ResponseWriter, r *http.Request) {
+
+	if err := app.renderTemplate(w, r, "home", &templateData{}); err != nil {
+		app.errorlog.Println(err)
+	}
+}
+
 // VirtualTerminal displays the virtual terminal page
 func (app *application) VirtualTerminal(w http.ResponseWriter, r *http.Request) {
 
