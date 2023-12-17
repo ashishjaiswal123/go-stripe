@@ -7,6 +7,26 @@ import (
 	"net/http"
 )
 
+// writeJSON write arbitry data out as JSON
+func (app *application) writeJSON(w http.ResponseWriter, status int, data interface{}, headers ...http.Header) error {
+	out, err := json.MarshalIndent(data, "", "\t")
+	if err != nil {
+		return err
+	}
+
+	if len(headers) > 0 {
+		for k, v := range headers[0] {
+			w.Header()[k] = v
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	w.Write(out)
+	return nil
+}
+
+// readJSON read json from body into data. we only accept a single json value in the body
 func (app *application) readJSON(w http.ResponseWriter, r *http.Request, data interface{}) error {
 	maxBytes := 1048576
 
@@ -18,14 +38,16 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, data in
 		return err
 	}
 
+	// we only allow entry in the json file
 	err = dec.Decode(&struct{}{})
 	if err != io.EOF {
-		return errors.New("body must only have a single JSOn value!")
+		return errors.New("body must only have a single JSON value")
 	}
 
 	return nil
 }
 
+// badRequest sends a JSON response with status http.statusBadRequest, describing err
 func (app *application) badRequest(w http.ResponseWriter, r *http.Request, err error) error {
 	var payload struct {
 		Error   bool   `json:"error"`
