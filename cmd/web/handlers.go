@@ -12,7 +12,6 @@ import (
 
 // Home displays the home page
 func (app *application) Home(w http.ResponseWriter, r *http.Request) {
-
 	if err := app.renderTemplate(w, r, "home", &templateData{}); err != nil {
 		app.errorLog.Println(err)
 	}
@@ -20,8 +19,7 @@ func (app *application) Home(w http.ResponseWriter, r *http.Request) {
 
 // VirtualTerminal displays the virtual terminal page
 func (app *application) VirtualTerminal(w http.ResponseWriter, r *http.Request) {
-
-	if err := app.renderTemplate(w, r, "terminal", &templateData{}, "stripe-js"); err != nil {
+	if err := app.renderTemplate(w, r, "terminal", &templateData{}); err != nil {
 		app.errorLog.Println(err)
 	}
 }
@@ -40,7 +38,7 @@ type TransactionData struct {
 	BankReturnCode  string
 }
 
-// GetTransactionData gets txnData from post and stripe
+// GetTransactionData gets txn data from post and stripe
 func (app *application) GetTransactionData(r *http.Request) (TransactionData, error) {
 	var txnData TransactionData
 	err := r.ParseForm()
@@ -149,7 +147,6 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 	}
-
 	_, err = app.SaveOrder(order)
 	if err != nil {
 		app.errorLog.Println(err)
@@ -161,8 +158,8 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 	http.Redirect(w, r, "/receipt", http.StatusSeeOther)
 }
 
-// VirtualTerminalPaymentSucceed displays the receipt page for virtual terminal transactions
-func (app *application) VirtualTerminalPaymentSucceed(w http.ResponseWriter, r *http.Request) {
+// VirtualTerminalPaymentSucceeded displays the receipt page for virtual terminal transactions
+func (app *application) VirtualTerminalPaymentSucceeded(w http.ResponseWriter, r *http.Request) {
 	txnData, err := app.GetTransactionData(r)
 	if err != nil {
 		app.errorLog.Println(err)
@@ -193,31 +190,27 @@ func (app *application) VirtualTerminalPaymentSucceed(w http.ResponseWriter, r *
 	http.Redirect(w, r, "/virtual-terminal-receipt", http.StatusSeeOther)
 }
 
-func (app *application) VirtualTerminalReceipt(w http.ResponseWriter, r *http.Request) {
-	txn := app.Session.Get(r.Context(), "receipt").(TransactionData)
-	data := make(map[string]interface{})
-	data["txn"] = txn
-	app.Session.Remove(r.Context(), "receipt")
-
-	if err := app.renderTemplate(w, r, "virtual-terminal-receipt", &templateData{
-		Data: data,
-	}); err != nil {
-		app.errorLog.Println(err)
-		return
-	}
-}
-
 func (app *application) Receipt(w http.ResponseWriter, r *http.Request) {
 	txn := app.Session.Get(r.Context(), "receipt").(TransactionData)
 	data := make(map[string]interface{})
 	data["txn"] = txn
 	app.Session.Remove(r.Context(), "receipt")
-
 	if err := app.renderTemplate(w, r, "receipt", &templateData{
 		Data: data,
 	}); err != nil {
 		app.errorLog.Println(err)
-		return
+	}
+}
+
+func (app *application) VirtualTerminalReceipt(w http.ResponseWriter, r *http.Request) {
+	txn := app.Session.Get(r.Context(), "receipt").(TransactionData)
+	data := make(map[string]interface{})
+	data["txn"] = txn
+	app.Session.Remove(r.Context(), "receipt")
+	if err := app.renderTemplate(w, r, "virtual-terminal-receipt", &templateData{
+		Data: data,
+	}); err != nil {
+		app.errorLog.Println(err)
 	}
 }
 
@@ -236,7 +229,7 @@ func (app *application) SaveCustomer(firstName, lastName, email string) (int, er
 	return id, nil
 }
 
-// SaveTransaction saves a transaction and returns id
+// SaveTransaction saves a txn and returns id
 func (app *application) SaveTransaction(txn models.Transaction) (int, error) {
 	id, err := app.DB.InsertTransaction(txn)
 	if err != nil {
@@ -265,7 +258,7 @@ func (app *application) ChargeOnce(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := make(map[string]any)
+	data := make(map[string]interface{})
 	data["widget"] = widget
 
 	if err := app.renderTemplate(w, r, "buy-once", &templateData{
@@ -275,6 +268,7 @@ func (app *application) ChargeOnce(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// BronzePlan displays the bronze plan page
 func (app *application) BronzePlan(w http.ResponseWriter, r *http.Request) {
 	widget, err := app.DB.GetWidget(2)
 	if err != nil {
@@ -288,20 +282,20 @@ func (app *application) BronzePlan(w http.ResponseWriter, r *http.Request) {
 	if err := app.renderTemplate(w, r, "bronze-plan", &templateData{
 		Data: data,
 	}); err != nil {
-		app.errorLog.Println(err)
+		app.errorLog.Print(err)
 	}
 }
 
+// BronzePlanReceipt displays the receipt for bronze plans
 func (app *application) BronzePlanReceipt(w http.ResponseWriter, r *http.Request) {
-
 	if err := app.renderTemplate(w, r, "receipt-plan", &templateData{}); err != nil {
-		app.errorLog.Println(err)
+		app.errorLog.Print(err)
 	}
 }
 
 // LoginPage displays the login page
 func (app *application) LoginPage(w http.ResponseWriter, r *http.Request) {
 	if err := app.renderTemplate(w, r, "login", &templateData{}); err != nil {
-		app.errorLog.Println(err)
+		app.errorLog.Print(err)
 	}
 }

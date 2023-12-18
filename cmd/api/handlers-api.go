@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"go-stripe-payment/internal/cards"
 	"go-stripe-payment/internal/models"
-	"strings"
-	"time"
 
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stripe/stripe-go/v72"
@@ -92,6 +92,7 @@ func (app *application) GetPaymentIntent(w http.ResponseWriter, r *http.Request)
 	}
 }
 
+// GetWidgetByID gets one widget by id and returns as JSON
 func (app *application) GetWidgetByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	widgetID, _ := strconv.Atoi(id)
@@ -130,7 +131,7 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 
 	okay := true
 	var subscription *stripe.Subscription
-	txnMsg := "Transaction Successfull"
+	txnMsg := "Transaction successful"
 
 	stripeCustomer, msg, err := card.CreateCustomer(data.PaymentMethod, data.Email)
 	if err != nil {
@@ -144,9 +145,8 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 		if err != nil {
 			app.errorLog.Println(err)
 			okay = false
-			txnMsg = "error subscribing customer"
+			txnMsg = "Error subscribing customer"
 		}
-
 		app.infoLog.Println("subscription id is", subscription.ID)
 	}
 
@@ -164,7 +164,7 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 		// expiryYear, _ := strconv.Atoi(data.ExpiryYear)
 		txn := models.Transaction{
 			Amount:              amount,
-			Currency:            "inr",
+			Currency:            "cad",
 			LastFour:            data.LastFour,
 			ExpiryMonth:         data.ExpiryMonth,
 			ExpiryYear:          data.ExpiryYear,
@@ -177,7 +177,7 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 			return
 		}
 
-		// create a order
+		// create order
 		order := models.Order{
 			WidgetID:      productID,
 			TransactionID: txnID,
@@ -226,7 +226,7 @@ func (app *application) SaveCustomer(firstName, lastName, email string) (int, er
 	return id, nil
 }
 
-// SaveTransaction saves a transaction and returns id
+// SaveTransaction saves a txn and returns id
 func (app *application) SaveTransaction(txn models.Transaction) (int, error) {
 	id, err := app.DB.InsertTransaction(txn)
 	if err != nil {
@@ -253,6 +253,7 @@ func (app *application) CreateAuthToken(w http.ResponseWriter, r *http.Request) 
 	err := app.readJSON(w, r, &userInput)
 	if err != nil {
 		app.badRequest(w, r, err)
+		return
 	}
 
 	// get the user from the database by email; send error if invalid email
@@ -302,10 +303,10 @@ func (app *application) CreateAuthToken(w http.ResponseWriter, r *http.Request) 
 	_ = app.writeJSON(w, http.StatusOK, payload)
 }
 
-func (app *application) authenticationToken(r *http.Request) (*models.User, error) {
+func (app *application) authenticateToken(r *http.Request) (*models.User, error) {
 	authorizationHeader := r.Header.Get("Authorization")
 	if authorizationHeader == "" {
-		return nil, errors.New("no authorization recieved")
+		return nil, errors.New("no authorization header received")
 	}
 
 	headerParts := strings.Split(authorizationHeader, " ")
@@ -315,10 +316,10 @@ func (app *application) authenticationToken(r *http.Request) (*models.User, erro
 
 	token := headerParts[1]
 	if len(token) != 26 {
-		return nil, errors.New("authorization token wrong size")
+		return nil, errors.New("authentication token wrong size")
 	}
 
-	// ge the user from the tokens table
+	// get the user from the tokens table
 	user, err := app.DB.GetUserForToken(token)
 	if err != nil {
 		return nil, errors.New("no matching user found")
@@ -329,7 +330,7 @@ func (app *application) authenticationToken(r *http.Request) (*models.User, erro
 
 func (app *application) CheckAuthentication(w http.ResponseWriter, r *http.Request) {
 	// validate the token, and get associated user
-	user, err := app.authenticationToken(r)
+	user, err := app.authenticateToken(r)
 	if err != nil {
 		app.invalidCredentials(w)
 		return
@@ -341,6 +342,67 @@ func (app *application) CheckAuthentication(w http.ResponseWriter, r *http.Reque
 		Message string `json:"message"`
 	}
 	payload.Error = false
-	payload.Message = fmt.Sprintf("authenticatedauthenticated user %s", user.Email)
-	_ = app.writeJSON(w, http.StatusOK, payload)
+	payload.Message = fmt.Sprintf("authenticated user %s", user.Email)
+	app.writeJSON(w, http.StatusOK, payload)
+}
+
+func (app *application) VirtualTerminalPaymentSucceeded(w http.ResponseWriter, r *http.Request) {
+	var txnData struct {
+		PaymentAmount   int    `json:"amount"`
+		PaymentCurrency string `json:"currency"`
+		FirstName       string `json:"first_name"`
+		LastName        string `json:"last_name"`
+		Email           string `json:"email"`
+		PaymentIntent   string `json:"payment_intent"`
+		PaymentMethod   string `json:"payment_method"`
+		BankReturnCode  string `json:"bank_return_code"`
+		ExpiryMonth     int    `json:"expiry_month"`
+		ExpiryYear      int    `json:"expiry_year"`
+		LastFour        string `json:"last_four"`
+	}
+
+	err := app.readJSON(w, r, &txnData)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	card := cards.Card{
+		Secret: app.config.stripe.secret,
+		Key:    app.config.stripe.key,
+	}
+
+	pi, err := card.RetrievePaymentIntent(txnData.PaymentIntent)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	pm, err := card.GetPaymentMethod(txnData.PaymentMethod)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	txnData.LastFour = pm.Card.Last4
+	txnData.ExpiryMonth = int(pm.Card.ExpMonth)
+	txnData.ExpiryYear = int(pm.Card.ExpYear)
+
+	txn := models.Transaction{
+		Amount:              txnData.PaymentAmount,
+		Currency:            txnData.PaymentCurrency,
+		LastFour:            txnData.LastFour,
+		ExpiryMonth:         txnData.ExpiryMonth,
+		ExpiryYear:          txnData.ExpiryYear,
+		BankReturnCode:      pi.Charges.Data[0].ID,
+		TransactionStatusID: 2,
+	}
+
+	_, err = app.SaveTransaction(txn)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, txn)
 }
