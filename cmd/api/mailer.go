@@ -44,8 +44,6 @@ func (app *application) SendMail(from, to, subject, tmpl string, data any) error
 
 	plainMessgae := tpl.String()
 
-	app.infoLog.Println(formattedMessage, plainMessgae)
-
 	// send the mail
 	server := mail.NewSMTPClient()
 
