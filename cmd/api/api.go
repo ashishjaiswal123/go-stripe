@@ -31,6 +31,8 @@ type config struct {
 		username string
 		password string
 	}
+	secretKey string
+	frontend  string
 }
 
 type application struct {
@@ -66,6 +68,8 @@ func main() {
 	flag.StringVar(&cfg.smtp.username, "smtpuser", "d7db3c424fabe1", "smtp user")
 	flag.StringVar(&cfg.smtp.password, "smtppass", "e93c55f4d9142c", "smtp password")
 	flag.IntVar(&cfg.smtp.port, "smtpport", 587, "smtp port")
+	flag.StringVar(&cfg.secret, "secret", "jbejk32bkebknekj35kmwj56gbbwbb", "secret")
+	flag.StringVar(&cfg.frontend, "frontend", "http://localhost:4000", "url to frontend")
 
 	flag.Parse()
 	err := godotenv.Load()
