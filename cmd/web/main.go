@@ -33,6 +33,8 @@ type config struct {
 		secret string
 		key    string
 	}
+	secretKey string
+	frontend  string
 }
 
 type application struct {
@@ -68,6 +70,8 @@ func main() {
 	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production}")
 	flag.StringVar(&cfg.db.dsn, "dsn", "root:1234@tcp(localhost:3306)/widgets?parseTime=true&tls=false", "DSN")
 	flag.StringVar(&cfg.api, "api", "http://localhost:4001", "URL to api")
+	flag.StringVar(&cfg.secretKey, "secret", "jbejk32bkebknekj35kmwj56gbbwbb", "secret")
+	flag.StringVar(&cfg.frontend, "frontend", "http://localhost:4000", "url to frontend")
 
 	flag.Parse()
 

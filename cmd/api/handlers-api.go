@@ -449,7 +449,7 @@ func (app *application) SendPasswordResetMail(w http.ResponseWriter, r *http.Req
 	data.Link = signedLink
 
 	// send mail
-	err = app.SendMail("info@widgets.com", "info@widgets.com", "Password Reset Request", "password-reset", data)
+	err = app.SendMail("info@widgets.com", payload.Email, "Password Reset Request", "password-reset", data)
 	if err != nil {
 		app.errorLog.Println(err)
 		app.badRequest(w, r, err)

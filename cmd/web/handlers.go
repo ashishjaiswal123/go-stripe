@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"go-stripe-payment/internal/cards"
 	"go-stripe-payment/internal/models"
+	"go-stripe-payment/internal/urlsigner"
 	"net/http"
 	"strconv"
 	"time"
@@ -330,6 +332,31 @@ func (app *application) Logout(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	if err := app.renderTemplate(w, r, "forgot-password", &templateData{}); err != nil {
+		app.errorLog.Println(err)
+	}
+}
+
+func (app *application) ShowResetPassword(w http.ResponseWriter, r *http.Request) {
+	theURL := r.RequestURI
+	testURL := fmt.Sprintf("%s%s", app.config.frontend, theURL)
+
+	signer := urlsigner.Signer{
+		Secret: []byte(app.config.secretKey),
+	}
+
+	valid := signer.VerifyToken(testURL)
+
+	if !valid {
+		app.errorLog.Println("Invalid url - tampering detected")
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["email"] = r.URL.Query().Get("email")
+
+	if err := app.renderTemplate(w, r, "reset-password", &templateData{
+		Data: data,
+	}); err != nil {
 		app.errorLog.Println(err)
 	}
 }
