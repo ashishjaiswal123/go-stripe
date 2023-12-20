@@ -38,8 +38,8 @@ var templateFS embed.FS
 
 func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
 	td.API = app.config.api
-	td.StripePublishableKey = app.config.stripe.key
 	td.StripeSecretKey = app.config.stripe.secret
+	td.StripePublishableKey = app.config.stripe.key
 
 	if app.Session.Exists(r.Context(), "userID") {
 		td.IsAuthenticated = 1
@@ -57,7 +57,7 @@ func (app *application) renderTemplate(w http.ResponseWriter, r *http.Request, p
 
 	_, templateInMap := app.templateCache[templateToRender]
 
-	if app.config.env == "production" && templateInMap {
+	if templateInMap {
 		t = app.templateCache[templateToRender]
 	} else {
 		t, err = app.parseTemplate(partials, page, templateToRender)
@@ -72,6 +72,7 @@ func (app *application) renderTemplate(w http.ResponseWriter, r *http.Request, p
 	}
 
 	td = app.addDefaultData(td, r)
+
 	err = t.Execute(w, td)
 	if err != nil {
 		app.errorLog.Println(err)
@@ -97,7 +98,6 @@ func (app *application) parseTemplate(partials []string, page, templateToRender 
 	} else {
 		t, err = template.New(fmt.Sprintf("%s.page.gohtml", page)).Funcs(functions).ParseFS(templateFS, "templates/base.layout.gohtml", templateToRender)
 	}
-
 	if err != nil {
 		app.errorLog.Println(err)
 		return nil, err
