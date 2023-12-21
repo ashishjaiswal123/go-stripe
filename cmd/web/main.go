@@ -43,6 +43,7 @@ type application struct {
 	errorLog      *log.Logger
 	templateCache map[string]*template.Template
 	version       string
+	cssVersion    string
 	DB            models.DBModel
 	Session       *scs.SessionManager
 }
@@ -107,6 +108,7 @@ func main() {
 		version:       version,
 		DB:            models.DBModel{DB: conn},
 		Session:       session,
+		cssVersion:    cssVersion,
 	}
 
 	err = app.serve()
