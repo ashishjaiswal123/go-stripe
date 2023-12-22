@@ -792,19 +792,19 @@ func (m *DBModel) GetOneUser(id int) (User, error) {
 	return u, nil
 }
 
+// EditUser edits an existing user
 func (m *DBModel) EditUser(u User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	stmt := `
-		update users set 
-			first_name = ?
-			last_name = ?
-			email = ?
+		update users set
+			first_name = ?,
+			last_name = ?,
+			email = ?,
 			updated_at = ?
-		where 
-			id = ?
-	`
+		where
+			id = ?`
 
 	_, err := m.DB.ExecContext(ctx, stmt,
 		u.FirstName,
@@ -813,29 +813,31 @@ func (m *DBModel) EditUser(u User) error {
 		time.Now(),
 		u.ID,
 	)
+
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
+// AddUser inserts a user into the database
 func (m *DBModel) AddUser(u User, hash string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	stmt := `
 		insert into users (first_name, last_name, email, password, created_at, updated_at)
-		values (?, ?, ?, ?, ?, ?)
-	`
+		values (?, ?, ?, ?, ?, ?)`
 
 	_, err := m.DB.ExecContext(ctx, stmt,
 		u.FirstName,
 		u.LastName,
 		u.Email,
-		u.Password,
+		hash,
 		time.Now(),
 		time.Now(),
 	)
+
 	if err != nil {
 		return err
 	}
