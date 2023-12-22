@@ -691,3 +691,15 @@ func (app *application) AllUsers(w http.ResponseWriter, r *http.Request) {
 
 	app.writeJSON(w, http.StatusOK, allUsers)
 }
+
+func (app *application) OneUser(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	userID, _ := strconv.Atoi(id)
+
+	user, err := app.DB.GetOneUser(userID)
+	if err != nil {
+		app.badRequest(w, r, err)
+	}
+
+	app.writeJSON(w, http.StatusOK, user)
+}
