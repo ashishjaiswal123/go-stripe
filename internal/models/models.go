@@ -497,6 +497,7 @@ func (m *DBModel) GetAllOrdersPaginated(pageSize, page int) ([]*Order, int, int,
 	return orders, lastPage, totalRecords, nil
 }
 
+// GetAllSubscriptions returns a slice of all subscriptions
 func (m *DBModel) GetAllSubscriptions() ([]*Order, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
