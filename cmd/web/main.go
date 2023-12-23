@@ -111,6 +111,8 @@ func main() {
 		cssVersion:    cssVersion,
 	}
 
+	go app.ListenToWsChannel()
+
 	err = app.serve()
 	if err != nil {
 		app.errorLog.Println(err)
